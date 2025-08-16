@@ -1,8 +1,12 @@
 // src/users/users.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -10,9 +14,44 @@ export class UsersService {
     @InjectRepository(User) private readonly repo: Repository<User>,
   ) {}
 
-  async create(user: Partial<User>) {
+  // --- Create user with role restriction ---
+  async create(user: Partial<User>, currentUserRole?: UserRole) {
+    // Restrict assigning SUPER_ADMIN or ADMIN if current user is not SUPER_ADMIN
+    if (
+      user.role === UserRole.SUPER_ADMIN &&
+      currentUserRole !== UserRole.SUPER_ADMIN
+    ) {
+      throw new BadRequestException(
+        'Only SUPER_ADMIN can assign SUPER_ADMIN role',
+      );
+    }
+    if (
+      user.role === UserRole.ADMIN &&
+      currentUserRole !== UserRole.SUPER_ADMIN
+    ) {
+      throw new BadRequestException('Only SUPER_ADMIN can assign ADMIN role');
+    }
+
     const u = this.repo.create(user);
     return this.repo.save(u);
+  }
+
+  // --- Update user with role restriction ---
+  async update(id: string, update: Partial<User>, currentUserRole?: UserRole) {
+    // Restrict updating role to higher roles
+    if (
+      (update.role === UserRole.SUPER_ADMIN ||
+        update.role === UserRole.ADMIN) &&
+      currentUserRole !== UserRole.SUPER_ADMIN
+    ) {
+      throw new BadRequestException(
+        'Only SUPER_ADMIN can assign or update to SUPER_ADMIN/ADMIN role',
+      );
+    }
+
+    const entity = await this.repo.preload({ id, ...update });
+    if (!entity) throw new NotFoundException('User not found');
+    return this.repo.save(entity);
   }
 
   async findAll() {
@@ -25,20 +64,13 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, update: Partial<User>) {
-    // preload merges { id, ...update } into an entity instance if it exists
-    const entity = await this.repo.preload({ id, ...update });
-    if (!entity) throw new NotFoundException('User not found');
-    return this.repo.save(entity);
-  }
-
   async remove(id: string) {
     const result = await this.repo.delete(id);
     if (result.affected === 0) throw new NotFoundException('User not found');
     return { deleted: true };
   }
 
-  // --- existing helpers you had ---
+  // --- Existing helpers ---
   findByEmail = async (email: string) =>
     this.repo.findOne({ where: { email } });
 
