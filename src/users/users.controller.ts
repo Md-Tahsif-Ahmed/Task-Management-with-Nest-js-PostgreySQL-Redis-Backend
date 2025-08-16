@@ -1,3 +1,4 @@
+// src/users/users.controller.ts
 import {
   Controller,
   Get,
@@ -15,11 +16,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole, User } from './entities/user.entity';
+import { UserRole } from './entities/user.entity';
 import { Request } from 'express';
 
+interface JwtUser {
+  userId: string;
+  email: string;
+  role: UserRole;
+}
+
 interface AuthRequest extends Request {
-  user: User;
+  user: JwtUser;
 }
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,18 +36,9 @@ export class UsersController {
 
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  create(@Body() dto: CreateUserDto, @Req() req: AuthRequest) {
-    return this.usersService.create(dto, req.user);
-  }
-
-  @Patch(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateUserDto,
-    @Req() req: AuthRequest,
-  ) {
-    return this.usersService.update(id, dto, req.user);
+  create(@Body() createUserDto: CreateUserDto, @Req() req: AuthRequest) {
+    // current logged-in user role pass in sevice method
+    return this.usersService.create(createUserDto, req.user.role);
   }
 
   @Get()
@@ -53,6 +51,16 @@ export class UsersController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: AuthRequest,
+  ) {
+    return this.usersService.update(id, updateUserDto, req.user.role);
   }
 
   @Delete(':id')
