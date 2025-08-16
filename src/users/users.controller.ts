@@ -37,8 +37,7 @@ export class UsersController {
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   create(@Body() createUserDto: CreateUserDto, @Req() req: AuthRequest) {
-    // current logged-in user role pass in sevice method
-    return this.usersService.create(createUserDto, req.user.role);
+    return this.usersService.create(createUserDto, req.user);
   }
 
   @Get()
@@ -60,7 +59,7 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: AuthRequest,
   ) {
-    return this.usersService.update(id, updateUserDto, req.user.role);
+    return this.usersService.update(id, updateUserDto, req.user);
   }
 
   @Delete(':id')

@@ -2,7 +2,8 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
+  // BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,42 +14,32 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private readonly repo: Repository<User>,
   ) {}
-
-  // --- Create user with role restriction ---
-  async create(user: Partial<User>, currentUserRole?: UserRole) {
-    // Restrict assigning SUPER_ADMIN or ADMIN if current user is not SUPER_ADMIN
+  async create(
+    user: Partial<User>,
+    currentUser: { userId: string; role: UserRole },
+  ) {
+    // If logged-in user is ADMIN, prevent assigning SUPER_ADMIN role
     if (
-      user.role === UserRole.SUPER_ADMIN &&
-      currentUserRole !== UserRole.SUPER_ADMIN
+      currentUser.role === UserRole.ADMIN &&
+      user.role === UserRole.SUPER_ADMIN
     ) {
-      throw new BadRequestException(
-        'Only SUPER_ADMIN can assign SUPER_ADMIN role',
-      );
+      throw new ForbiddenException('Admin cannot assign SUPER_ADMIN role');
     }
-    if (
-      user.role === UserRole.ADMIN &&
-      currentUserRole !== UserRole.SUPER_ADMIN
-    ) {
-      throw new BadRequestException('Only SUPER_ADMIN can assign ADMIN role');
-    }
-
     const u = this.repo.create(user);
     return this.repo.save(u);
   }
 
-  // --- Update user with role restriction ---
-  async update(id: string, update: Partial<User>, currentUserRole?: UserRole) {
-    // Restrict updating role to higher roles
+  async update(
+    id: string,
+    update: Partial<User>,
+    currentUser: { userId: string; role: UserRole },
+  ) {
     if (
-      (update.role === UserRole.SUPER_ADMIN ||
-        update.role === UserRole.ADMIN) &&
-      currentUserRole !== UserRole.SUPER_ADMIN
+      currentUser.role === UserRole.ADMIN &&
+      update.role === UserRole.SUPER_ADMIN
     ) {
-      throw new BadRequestException(
-        'Only SUPER_ADMIN can assign or update to SUPER_ADMIN/ADMIN role',
-      );
+      throw new ForbiddenException('Admin cannot assign SUPER_ADMIN role');
     }
-
     const entity = await this.repo.preload({ id, ...update });
     if (!entity) throw new NotFoundException('User not found');
     return this.repo.save(entity);
