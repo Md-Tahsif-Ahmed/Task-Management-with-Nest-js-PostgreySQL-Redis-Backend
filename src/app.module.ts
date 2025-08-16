@@ -1,17 +1,3 @@
-// import { Module } from '@nestjs/common';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-// import { UsersModule } from './users/users.module';
-// import { AuthModule } from './auth/auth.module';
-
-// @Module({
-//   imports: [UsersModule, AuthModule],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
-// src/app.module.ts
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,8 +11,8 @@ import { ThrottlerModule, ThrottlerGuard, seconds } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { TasksModule } from './tasks/tasks.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TaskModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -81,7 +67,7 @@ import { ProjectsModule } from './projects/projects.module';
     // Feature modules go here:
     UsersModule,
     AuthModule,
-    TasksModule,
+    TaskModule,
     ProjectsModule,
   ],
   controllers: [],

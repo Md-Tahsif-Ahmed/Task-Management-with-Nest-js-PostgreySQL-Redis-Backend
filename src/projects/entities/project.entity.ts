@@ -9,8 +9,7 @@ import {
 } from 'typeorm';
 import { ProjectMember } from './project-member.entity';
 import { User } from 'src/users/entities/user.entity';
-// Task relation placeholder (Tasks module আসবে)
-// import { Task } from '../../tasks/task.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 
 export enum ProjectStatus {
   ACTIVE = 'ACTIVE',
@@ -47,8 +46,8 @@ export class Project {
   @OneToMany(() => ProjectMember, (pm) => pm.project, { cascade: true })
   members: ProjectMember[];
 
-  // @OneToMany(() => Task, (t) => t.project)
-  // tasks: Task[];
+  @OneToMany(() => Task, (t) => t.project)
+  tasks: Task[];
 
   @CreateDateColumn()
   createdAt: Date;

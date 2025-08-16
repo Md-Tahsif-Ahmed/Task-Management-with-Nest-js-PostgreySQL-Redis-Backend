@@ -1,49 +1,3 @@
-// import { Injectable, NotFoundException } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { Project } from './entities/project.entity';
-// import { CreateProjectDto } from './dto/create-project.dto';
-// import { UpdateProjectDto } from './dto/update-project.dto';
-// import { User } from '../users/entities/user.entity';
-
-// @Injectable()
-// export class ProjectsService {
-//   constructor(
-//     @InjectRepository(Project)
-//     private readonly projectRepo: Repository<Project>,
-//   ) {}
-
-//   async create(dto: CreateProjectDto, owner: User): Promise<Project> {
-//     const project = this.projectRepo.create({ ...dto, owner });
-//     return await this.projectRepo.save(project);
-//   }
-
-//   async findAll(owner: User): Promise<Project[]> {
-//     return await this.projectRepo.find({ where: { owner } });
-//   }
-
-//   async findOne(id: string, owner: User): Promise<Project> {
-//     const project = await this.projectRepo.findOne({ where: { id, owner } });
-//     if (!project) throw new NotFoundException('Project not found');
-//     return project;
-//   }
-
-//   async update(
-//     id: string,
-//     dto: UpdateProjectDto,
-//     owner: User,
-//   ): Promise<Project> {
-//     const project = await this.findOne(id, owner);
-//     Object.assign(project, dto);
-//     return await this.projectRepo.save(project);
-//   }
-
-//   async remove(id: string, owner: User): Promise<void> {
-//     const project = await this.findOne(id, owner);
-//     await this.projectRepo.remove(project);
-//   }
-// }
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -125,7 +79,6 @@ export class ProjectsService {
 
     if (dto.name !== undefined) {
       project.name = dto.name;
-      // name বদলালে চাইলে slug-ও বদলাতে পারো; না চাইলে এই ব্লকটি রেখে দাও/কমেন্ট করো।
       // const nextSlug = await this.ensureUniqueSlug(this.slugify(dto.name));
       // project.slug = nextSlug;
     }

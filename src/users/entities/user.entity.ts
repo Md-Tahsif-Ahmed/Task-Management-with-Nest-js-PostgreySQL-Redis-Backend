@@ -1,4 +1,5 @@
 import { Project } from 'src/projects/entities/project.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -45,6 +46,9 @@ export class User {
 
   @OneToMany(() => Project, (project) => project.owner)
   projects?: Project[];
+
+  @OneToMany(() => Task, (task) => task.assignedTo)
+  tasks?: Task[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
